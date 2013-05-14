@@ -1,0 +1,17 @@
+<div class="container-fluid">
+	<div class="main">
+    <h2 class="form-signin-heading">ログインログ一覧</h2>
+    <form action="delete_id" method="get">
+      <table class="table table-striped table-bordered">
+      <thead>
+          <tr><th>名前</th><th>ログインした時間</th><th>最後にログアウトした時間</th></tr>
+      </thead>
+      <tbody>
+          <% @table.each {|i| %>
+          <%= "<tr><td>#{h i.name}</td><td>#{i.login}</td><td>#{i.logout}</td></tr>" %>
+          <% } %>
+      </tbody>
+      </table>
+    </form>
+  </div>
+</div>

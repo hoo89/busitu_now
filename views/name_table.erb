@@ -1,0 +1,17 @@
+<div class="container-fluid">
+	<div class="main">
+    <h2 class="form-signin-heading">登録名一覧</h2>
+    <form action="delete_id" method="get">
+      <table class="table table-striped table-bordered">
+      <thead>
+          <tr><th width="10">ID</th><th>名前</th><th>MACアドレス</th><th width="50"></th></tr>
+      </thead>
+      <tbody>
+          <% @table.each {|i| %>
+          <%= "<tr><td>#{i.id}</td><td>#{h i.name}</td><td>#{i.mac}</td><td><input class='btn btn-primary' name='#{i.id}' type='submit' value='削除'></td></tr>" %>              
+          <% } %>
+      </tbody>
+      </table>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,2 @@
+*/10 * * * * wget http://server_ip/post_in_out -q -t 1 -O - >/dev/null 2>&1
+* 0 * * * wget http://server_ip/post_members -q -t 1 -O - >/dev/null 2>&1
