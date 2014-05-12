@@ -32,6 +32,7 @@ class LoginState
   property :last_login, DateTime
   property :last_logout, DateTime
   property :login_minute, Integer, :default => 0
+  property :last_ip, String
   auto_upgrade!
 end
 
@@ -54,7 +55,8 @@ def update_login_state(hash)
   more.each{|i|
     ok&&=LoginState.first_or_create(:name => i).update(
       :login => true,
-      :last_login => time_now
+      :last_login => time_now,
+      :last_ip => @now_addresses.find{|a| a.name==i}.try(:ip)
       )
     ok&&=LoginLog.create(
         :name => i,
@@ -72,10 +74,16 @@ def update_login_state(hash)
       :last_logout => time_now,
       :login_minute => m
       )
-    ok&&=LoginLog.last(:name => i).try(:update,{:login =>time_now})
+    ok&&=LoginLog.last(:name => i).try(:update,{:logout =>time_now})
   }
 
   ok
+end
+
+def ping_to_ips(ips)
+  ips.each{|i|
+    `ping -n 1 #{i}`
+  }
 end
 
 configure do
@@ -98,8 +106,7 @@ end
 
 post '/register' do
   @name = params[:name]
-  entry = @now_addresses.find{|i| request.ip == i[:ip]}
-  @mac = entry[:mac] unless entry.nil?
+  @mac = @now_addresses.find{|i| request.ip == i.ip}.try(:mac)
   if !@mac||!@name
     #error
     ok = nil
@@ -119,9 +126,12 @@ post '/register' do
 end
 
 get '/post_in_out' do
+  ips = LoginState.all(:login => true).map{|i| i.last_ip}.compact
+  #ping_to_ips(ips)
+  @now_addresses = @router.get_address_table
   prev_users = LoginState.all(:login => true).map{|i| i.name}
   now_users = @now_addresses.map{|i|
-    NameTable.first(:mac => i[:mac]).try(:name)
+    NameTable.first(:mac => i.mac).try(:name)
   }.compact.uniq
 
   more = now_users - prev_users
@@ -151,7 +161,7 @@ end
 get '/post_members' do
   time = DateTime.now.new_offset(Rational(9, 24)).strftime("%R")
   m=LoginState.all(:login => true).map{|i| i.name}.join(" ")
-  unless m.empty?
+  if !(m.empty?||Time.now.hour<8||Time.now.hour>=21)
     @bot.post("部室なう！ %(members) %(time)", {:members=>m,:time=>time})
     "Posted!"
   else
@@ -170,7 +180,7 @@ get '/login_state' do
 end
 
 get '/login_log' do
-  @table = LoginLog.all
+  @table = LoginLog.all(:order => [ :login.desc ])
   erb :login_log
 end
 
@@ -181,4 +191,23 @@ get '/delete_id' do
   else
     "削除に失敗しました。"
   end
+end
+
+get '/graph' do
+  @result=LoginState.all.map{|i| [i.name,i.login_minute]}.sort_by{|i| i[1]}.reverse
+  @label="合計滞在時間"
+  @start=LoginLog.first.login.strftime("%Y/%m/%d")
+  @now=Time.now.strftime("%Y/%m/%d")
+  erb :graph
+end
+
+get '/graph2' do
+  r={}
+  r.default=0
+  LoginLog.all.each{|i| r[i.name]+=1}
+  @result=r.to_a.sort_by{|i| i[1]}.reverse
+  @label="入退室回数"
+  @start=LoginLog.first.login.strftime("%Y/%m/%d")
+  @now=Time.now.strftime("%Y/%m/%d")
+  erb :graph
 end

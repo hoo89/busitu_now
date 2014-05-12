@@ -1,0 +1,42 @@
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<div class="container-fluid">
+  <div class="hero-unit">
+    <h1>分析してみたったー</h1>
+  </div>
+
+  <div class="span6">
+    <%= @start %>から<%= @now %>までの<%= @label %>
+  </div>
+  <div class="span12">
+    <div id="chart_div1"></div>
+  </div>
+  <div class="span6">
+    <a href="/graph">合計滞在時間</a></b>
+    <a href="/graph2">入退室回数</a>
+  </div>
+</div>
+
+<script type="text/javascript">
+
+  // Load the Visualization API and the piechart package.
+  google.load('visualization', '1.0', {'packages':['corechart']});
+  
+  // Set a callback to run when the Google Visualization API is loaded.
+  google.setOnLoadCallback(drawChart);
+
+
+  // Callback that creates and populates a data table, 
+  // instantiates the pie chart, passes in the data and
+  // draws it.
+   function drawChart() {
+    var data = google.visualization.arrayToDataTable([
+      ['部員', "<%=@label%>"],
+      <% @result.each{|i| %>
+      <%= "['#{i[0]}',#{i[1]}]," %>
+      <% } %>
+    ]);
+
+    var chart = new google.visualization.ColumnChart(document.getElementById('chart_div1'));
+    chart.draw(data);
+  }
+</script>
