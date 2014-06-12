@@ -1,5 +1,7 @@
 require 'open-uri'
 
+AddressEntry=Struct.new(:name,:ip,:mac,:connect)
+
 class RouterScraper
   def get_address_table
     doc=open("http://#{$ROUTER_ADDRESS}/Status_Lan.asp",{:http_basic_authentication => $ROUTER_ID_PASSWD}).read
@@ -8,10 +10,8 @@ class RouterScraper
     addresses=str.delete("'").split(",")
 
     result=[]
-    col=[:name,:ip,:mac,:connect]
     addresses.each_slice(4){|i|
-      col.zip(i).flatten
-      result<<Hash[*col.zip(i).flatten]
+      result<<AddressEntry.new(*i)
     }
 
     result
@@ -20,7 +20,8 @@ end
 
 class RouterScraperDummy
   def get_address_table
-    []
-    #[{:mac => '9c:eb:e8:03:04:7b',:ip => '0.0.0.0'}] #sample
+    #[]
+    [AddressEntry.new('','0.0.0.0','9c:eb:e8:03:04:7b',0)] #sample
   end
 end
+

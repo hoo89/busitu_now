@@ -24,7 +24,22 @@
      </style>
 </head>
 <body>
-    <%= yield %>    
+    
+    <div class="navbar navbar-inverse navbar-static-top">
+      <div class="container-fluid">
+      <div class="navbar-inner">
+        <ul class="nav">
+          <li><a href="/">Home</a></li>
+          <li><a href="name_table">機器一覧</a></li>
+          <li><a href="graph">グラフ</a></li>
+          <li><a href="login_log">ログ</a></li>
+        </ul>
+      </div>
+    </div>
+    </div>
+    <div class="container-fluid">
+    <%= yield %>
+    </div> 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
 </body>
